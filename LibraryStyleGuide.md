@@ -77,7 +77,7 @@ Students should be able to fully understand `racecar_utils` and understand how t
 
 ## Documentation
 
-We use the following documentation pipeline to automatically generate and host our [documentation] (<https://mitll-racecar.readthedocs.io>):
+We use the following documentation pipeline to automatically generate and host our [documentation](https://mitll-racecar.readthedocs.io):
 
 1. **Input**: human-readable docstrings in library files.
 2. **[Doxypypy](https://pypi.org/project/doxypypy/)**: Converts docstrings to a doxygen-friendly format.
