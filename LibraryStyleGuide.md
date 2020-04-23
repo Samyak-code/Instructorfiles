@@ -21,6 +21,8 @@ Every library file should be formatted with [Black](https://pypi.org/project/bla
 
 Black enforces 88 characters per line for code but does not enforce a character limit in docstrings. We have chosen to manually extend this limit to docstrings as well, so **please manually format docstrings to 88 characters by hand**. In VS code you can [add a ruler](https://stackoverflow.com/questions/29968499/vertical-rulers-in-visual-studio-code) at 88 characters to help with this.
 
+Black does not automatically remove trailing whitespace, so **please remove trailing whitespace by hand**. In VS code, [this extension](https://marketplace.visualstudio.com/items?itemName=ybaumes.highlight-trailing-white-spaces) will highlight trailing white space.
+
 ### Reasoning
 
 Black is an uncompromising formatter which enforces greater consistency than other popular Python formatters. Consistent formatting improves readability. Without extending the 88 character limit to docstrings, much of the benefit of a character limit is lost.
