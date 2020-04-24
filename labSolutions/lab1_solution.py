@@ -11,9 +11,12 @@ Lab 1 - Driving and Controller
 ################################################################################
 
 import sys
-sys.path.insert(0, '../../library')
+
+sys.path.insert(0, "../../library")
 from racecar_core import *
-rospy.init_node('racecar')
+import racecar_utils as rc_utils
+
+rospy.init_node("racecar")
 
 
 ################################################################################
@@ -21,111 +24,139 @@ rospy.init_node('racecar')
 ################################################################################
 
 rc = Racecar()
-counter = 0
-drive_function = None
 
-SPEED = 1.0
-ANGLE = 1.0
+# A queue of driving steps to execute
+# Each entry is a triple of the form (time remaining, speed, angle)
+queue = []
 
 ################################################################################
 # Functions
 ################################################################################
 
+
 def start():
     """
     This function is run once every time the start button is pressed
     """
-    pass
+    global queue
+
+    # Begin at a full stop
+    rc.drive.stop()
+
+    # Begin with an empty queue
+    queue.clear()
+
+    # Print start message
+    # TODO: add a line explaining what the Y button does
+    print(
+        ">> Lab 1 - Driving in Shapes\n"
+        "\n"
+        "Controlls:\n"
+        "   Right trigger = accelerate forward\n"
+        "   Left trigger = accelerate backward\n"
+        "   Left joystick = turn front wheels\n"
+        "   A button = drive in a circle\n"
+        "   B button = drive in a square\n"
+        "   X button = drive in a figure eight\n"
+    )
+
 
 def update():
     """
     After start() is run, this function is run every frame until the back button
     is pressed
     """
-    global counter
-    global drive_function
-    counter += rc.get_delta_time()
+    global queue
 
-    # When the A button is pressed, begin driving in a circle
+    # When the A button is pressed, add instructions to drive in a circle
     if rc.controller.was_pressed(rc.controller.Button.A):
-        drive_function = drive_circle
-        counter = 0
+        drive_circle()
 
-    # When the B button is pressed, begin driving in a square
+    # When the B button is pressed, add instructions to drive in a square
     if rc.controller.was_pressed(rc.controller.Button.B):
-        drive_function = drive_square
-        counter = 0
-    
-    # When the X button is pressed, begin driving in a figure eight
+        drive_square()
+
+    # When the X button is pressed, add instructions to drive in a figure eight
     if rc.controller.was_pressed(rc.controller.Button.X):
-        drive_function = drive_figure_eight
-        counter = 0
+        drive_figure_eight()
+
+    # TODO: Drive in a shape of your choice when the Y button is pressed
 
     # Calculate speed from triggers
     forwardSpeed = rc.controller.get_trigger(rc.controller.Trigger.RIGHT)
     backSpeed = rc.controller.get_trigger(rc.controller.Trigger.LEFT)
-    speed = (forwardSpeed - backSpeed)
-
-    # If both triggers are pressed, stop for safety
-    if (forwardSpeed > 0 and backSpeed > 0):
-        speed = 0
+    speed = forwardSpeed - backSpeed
 
     # Calculate angle from left joystick
     angle = rc.controller.get_joystick(rc.controller.Joystick.LEFT)[0]
 
-    # If the triggers or joystick are pressed, use manual drive
-    if forwardSpeed > 0 or backSpeed > 0 or abs(angle) > 0:
-        drive_function = None
-        print(forwardSpeed, backSpeed, angle)
-        rc.drive.set_speed_angle(speed, angle)
+    # If the triggers or joystick were pressed, clear the queue to cancel the current
+    # shape and allow for manual driving
+    if forwardSpeed > 0 or backSpeed > 0 or angle > 0:
+        queue.clear()
 
-    # Otherwise, drive based on the current drive function
-    elif drive_function is not None:
-        drive_function(counter)    
+    # If the queue is not empty, follow the current drive instruction
+    if len(queue) > 0:
+        speed = queue[0][1]
+        angle = queue[0][2]
+        queue[0][0] -= rc.get_delta_time()
+        if queue[0][0] <= 0:
+            queue.pop(0)
 
-    else:
-        rc.drive.stop()
+    rc.drive.set_speed_angle(speed, angle)
 
 
-def drive_circle(counter):
+def drive_circle():
+    """
+    Add steps to drive in a circle to the instruction queue
+    """
+    global queue
+
+    # Tune this constant until the car completes a full circle
     CIRCLE_TIME = 5
 
-    if counter < CIRCLE_TIME:
-        rc.drive.set_speed_angle(SPEED, ANGLE)
-    else:
-        rc.drive.stop()
+    queue.clear()
+
+    # Turn right at full speed
+    queue.append((CIRCLE_TIME, 1, 1))
 
 
-def drive_square(counter):
-    STRAIGHT_TIME = 1
-    TURN_TIME = 0.5
+def drive_square():
+    """
+    Add steps to drive in a square to the instruction queue
+    """
+    global queue
 
-    for i in range(1, 5):
-        if counter < STRAIGHT_TIME * i + TURN_TIME * (i - 1):
-            rc.drive.set_speed_angle(SPEED, ANGLE)
-            break
-        if counter < STRAIGHT_TIME * i + TURN_TIME * i:
-            rc.drive.set_speed_angle(SPEED, 0)
-            break
-    else:
-        rc.drive.stop()
-
-
-def drive_figure_eight(counter):
+    # Tune these constants until the car completes a clean square
     STRAIGHT_TIME = 1
     TURN_TIME = 1.5
 
-    for i in range(1, 3):
-        if counter < STRAIGHT_TIME * i + TURN_TIME * (i - 1):
-            rc.drive.set_speed_angle(SPEED, ANGLE)
-            break
-        if counter < STRAIGHT_TIME * i + TURN_TIME * i:
-            rc.drive.set_speed_angle(SPEED, 0)
-            break
-    else:
-        rc.drive.stop()
-    
-    
+    queue.clear()
+
+    # Repeat 4 copies of: drive straight, turn right
+    for i in range(1, 4):
+        queue.append((STRAIGHT_TIME, 1, 0))
+        queue.append((TURN_TIME, 1, 1))
+
+
+def drive_figure_eight():
+    """
+    Add steps to drive in a figure eight to the instruction queue
+    """
+    global queue
+
+    # Tune these constants until the car completes a clean figure eight
+    STRAIGHT_TIME = 1
+    TURN_TIME = 4
+
+    queue.clear()
+
+    # Repeat 2 copies of: drive straight, turn right
+    for i in range(1, 2):
+        queue.append((STRAIGHT_TIME, 1, 0))
+        queue.append((TURN_TIME, 1, 1))
+
+
 ################################################################################
 # Do not modify any code beyond this point
 ################################################################################
