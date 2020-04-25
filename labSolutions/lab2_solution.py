@@ -45,7 +45,13 @@ contour_area = 0  # The area of contour
 # These will likely need to be tuned for your particular lighting/tape color
 BLUE = ((90, 50, 50), (110, 255, 255))  # The HSV range for the color blue
 ORANGE = ((20, 50, 50), (60, 255, 255))  # The HSV range for the color orange
-GREEN = ((90, 50, 50), (120, 255, 255)) # The HSV range for the color green
+GREEN = ((90, 50, 50), (120, 255, 255))  # The HSV range for the color green
+
+# Priority order for searching for tape colors
+COLOR_PRIORITY = (BLUE, ORANGE, GREEN)
+
+# Area of the cone contour when we are the correct distance away (must be tuned)
+CONE_AREA = 1000
 
 
 ################################################################################
@@ -53,12 +59,14 @@ GREEN = ((90, 50, 50), (120, 255, 255)) # The HSV range for the color green
 ################################################################################
 
 
-def update_contour(image):
+def update_contour(image, colors):
     """
     Identifies a contour in the provided image to update global variables.
 
     Args:
         image: (2D numpy array of pixels) The image in which to find contours.
+        colors: ([(hsv_min, hsv_max)]) List if color ranges to search for,
+            ordered by priority
 
     Note:
         Updates the global variables contour, contour_image, contour_center,
@@ -76,18 +84,22 @@ def update_contour(image):
         contour_center = None
         contour_area = 0
     else:
-        # TODO: Search for multiple tape colors with a priority order
-        # (currently we only search for blue)
+        for color in colors:
+            # Find all of the contours of the current color
+            contours = rc_utils.find_contours(image, color[0], color[1])
 
-        # Find all of the blue contours
-        contours = rc_utils.find_contours(image, BLUE[0], BLUE[1])
+            # Select the largest contour
+            contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_SIZE)
 
-        # Select the largest contour
-        contour = rc_utils.get_largest_contour(contours, MIN_CONTOUR_SIZE)
-
-        # Update contour variables
-        contour_center = rc_utils.get_center(contour)
-        contour_area = rc_utils.get_area(contour)
+            # If we found a contour, update center and area and stop searching
+            if contour is not None:
+                contour_center = rc_utils.get_center(contour)
+                contour_area = rc_utils.get_area(contour)
+                break
+        else:
+            # Update center and area for the case in which we found no contours
+            contour_center = None
+            contour_area = 0
 
 
 def start():
@@ -129,20 +141,43 @@ def update():
 
     image = rc.camera.get_image()
 
-    # Crop the image to the floor directly in front of the car
-    cropped_image = rc_utils.crop(image, CROP_FLOOR[0], CROP_FLOOR[1])
+    if rc.contoller.is_down(rc.controller.Button.LB):
+        # Search for the cone in the entire image
+        update_contour(image, ORANGE)
 
-    # Search for contours in the cropped
-    update_contour(cropped_image)
+        # Set the speed based on the area of the cone contour:
+        # 0 = no contour found, stop
+        # less than CONE_AREA = we are too far away, accelerate forward
+        # CONE_AREA = we are the correct distance away, stop
+        # greater than CONE_AREA = we are too close, back up
+        if contour_area > 0:
+            speed = rc_utils.remap_range(
+                contour_area, MIN_CONTOUR_SIZE, CONE_AREA, 1.0, 0.0
+            )
+            speed = max(-1.0, min(1.0, speed))
+
+            # If speed is close to 0, round to 0 to avoid jittering
+            if -0.2 < speed < 0.2:
+                speed = 0
+        else:
+            speed = 0
+    else:
+        # Crop the image to the floor directly in front of the car
+        cropped_image = rc_utils.crop(image, CROP_FLOOR[0], CROP_FLOOR[1])
+
+        # Search for tape in the cropped image using COLOR_PRIORITY order
+        update_contour(cropped_image, COLOR_PRIORITY)
+
+        # Use the triggers to control the car's speed
+        forwardSpeed = rc.controller.get_trigger(rc.controller.Trigger.RIGHT)
+        backSpeed = rc.controller.get_trigger(rc.controller.Trigger.LEFT)
+        speed = forwardSpeed - backSpeed
 
     # Choose an angle based on contour_center
     # If we could not find a contour, keep the previous angle
     if contour_center is not None:
-        # TODO: Implement a smoother way for the car to follow the line
-        if contour_center[1] < rc.camera.get_width() / 2:
-            angle = 1
-        else:
-            angle = -1
+        # Proportional control: map the center column to the angle range [-1 to 1]
+        angle = rc_utils.remap_range(contour_center[1], 0, rc.camera.get_width(), -1, 1)
 
     # Use the triggers to control the car's speed
     forwardSpeed = rc.controller.get_trigger(rc.controller.Trigger.RIGHT)
@@ -161,9 +196,6 @@ def update():
             print("No contour found")
         else:
             print("Center:", contour_center, "Area:", contour_area)
-
-    # TODO: When the left bumper (LB) is pressed, drive up to the closest cone
-    # and stop six inches in front of it.
 
 
 def update_slow():
