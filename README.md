@@ -7,7 +7,7 @@ This repository contains information and materials for instructors wishing to te
 This repository contains the following materials:
 
 - **[Style Guide](https://github.com/MITLLRacecar/Instructor/blob/master/LibraryStyleGuide.md)**: Outlines the requirements and expectations for files in the MITLLRacecar organization.
-- **[CAD](https://github.com/MITLLRacecar/Instructor/tree/master/cad)**: The SolidWorks CAD model for the RACECAR-MN. 
+- **[CAD](https://github.com/MITLLRacecar/Instructor/tree/master/cad)**: The SolidWorks CAD model for the RACECAR-MN.
 - **[Lab Solutions](https://github.com/MITLLRacecar/Instructor/tree/master/labSolutions)**: Completed versions of the labs found in the Student repository.
 - **[Lectures](https://github.com/MITLLRacecar/Instructor/tree/master/lectures)**: Source files (`.pptx`) for the lecture slides used in the RACECAR-MN course.
 
