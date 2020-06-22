@@ -103,31 +103,6 @@ def update():
     # The example provides an upper limit for the angle based on the speed,
     # but you can also choose to scale the angle instead.
 
-    # Linear scaling -- easy to implement, 
-    # but at max speed there is no turning 
-    # angle_scaling = 1 - abs(speed)
-
-    # Reciprocal scaling -- never reaches zero,
-    # but slows down quickly
-    # alpha = 10
-    # angle_scaling = 1/(alpha*abs(speed) + 1)
-
-    # Exponential scaling
-    # alpha = 1.7
-    # angle_scaling = -((2.718281)**(abs(speed)/alpha))+2
-    
-    # When the car is turning fast slow down
-    # Linear scaling
-    # speed_scaling = 1 - 0.25*abs(angle)
-    # Reciprocal scaling
-    # beta = 10 
-    # speed_scaling = 1/(beta*abs(angle) + 1)
-    # Exponential scaling
-    # beta = 2
-    # speed_scaling = -((2.718281)**(abs(angle)/alpha))+2
-
-
-
     # TODO (main challenge): Revisit the driving in shapes challenge.
     # Using your IMU data, create a more robust way to drive in shapes.
     
