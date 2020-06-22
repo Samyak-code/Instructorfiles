@@ -3,7 +3,7 @@ Copyright Harvey Mudd College
 MIT License
 Fall 2019
 
-Lab 3 - Depth Camera
+Lab 4 - IMU
 """
 
 ################################################################################
@@ -63,6 +63,7 @@ def start():
     current_linear_velocity = 0
 
     # Print start message
+    # TODO (main challenge): add a line explaining what the Y button does
     print(
         ">> Lab 4 - IMU \n"
         "\n"
@@ -70,8 +71,9 @@ def start():
         "   Right trigger = accelerate forward\n"
         "   Left trigger = accelerate backward\n"
         "   Left joystick = turn front wheels\n"
-        "   A button = print current speed and angle\n"
-        "   B button = print contour center and area"
+        "   A button = drive in a circle\n"
+        "   B button = drive in a square\n"
+        "   X button = drive in a figure eight\n"
     )
 
 
@@ -92,7 +94,7 @@ def update():
     # Calculate angle from left joystick
     angle = rc.controller.get_joystick(rc.controller.Joystick.LEFT)[0]
     
-    # TODO: (warmup) Prevent the car from turning too abruptly
+    # TODO (warmup): Prevent the car from turning too abruptly
     # Cap the angle based on the speed
     angle_cap = 1 - 0.25 * abs(speed)
     if angle > angle_cap:
@@ -101,27 +103,52 @@ def update():
     # The example provides an upper limit for the angle based on the speed,
     # but you can also choose to scale the angle instead.
 
-    # TODO: (challenge) Revisit the driving in shapes challenge.
+    # Linear scaling -- easy to implement, 
+    # but at max speed there is no turning 
+    # angle_scaling = 1 - abs(speed)
+
+    # Reciprocal scaling -- never reaches zero,
+    # but slows down quickly
+    # alpha = 10
+    # angle_scaling = 1/(alpha*abs(speed) + 1)
+
+    # Exponential scaling
+    # alpha = 1.7
+    # angle_scaling = -((2.718281)**(abs(speed)/alpha))+2
+    
+    # When the car is turning fast slow down
+    # Linear scaling
+    # speed_scaling = 1 - 0.25*abs(angle)
+    # Reciprocal scaling
+    # beta = 10 
+    # speed_scaling = 1/(beta*abs(angle) + 1)
+    # Exponential scaling
+    # beta = 2
+    # speed_scaling = -((2.718281)**(abs(angle)/alpha))+2
+
+
+
+    # TODO (main challenge): Revisit the driving in shapes challenge.
     # Using your IMU data, create a more robust way to drive in shapes.
     
     # When the A button is pressed, add instructions to drive in a circle
     if rc.controller.was_pressed(rc.controller.Button.A):
-        # TODO: drive in a circle
+        # TODO (main challenge): drive in a circle
         drive_circle()
 
     # When the B button is pressed, add instructions to drive in a square
     if rc.controller.was_pressed(rc.controller.Button.B):
-        # TODO: drive in a square
+        # TODO (main challenge): drive in a square
         drive_square()
 
     # When the X button is pressed, add instructions to drive in a figure eight
     if rc.controller.was_pressed(rc.controller.Button.X):
-        # TODO: drive in a figure eight
+        # TODO (main challenge): drive in a figure eight
         drive_figure_eight()
     
     # When the Y button is pressed, add instructions to drive in a shape of your choice
     if rc.controller.was_pressed(rc.controller.Button.X):
-        # TODO: drive in the shape of your choice
+        # TODO (main challenge): drive in the shape of your choice
         pass
 
     # If the triggers or joystick were pressed, clear the queue to cancel the current
