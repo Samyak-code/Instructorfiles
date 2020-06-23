@@ -33,7 +33,7 @@ rc = Racecar()
 # Each entry is a triple of the form (radians/distance remaining, speed, angle)
 queue = []
 
-# Keep track of velocity better estimate distance
+# Keep track of velocity to better estimate distance
 old_linear_velocity = 0
 current_linear_velocity = 0
 
@@ -93,15 +93,6 @@ def update():
 
     # Calculate angle from left joystick
     angle = rc.controller.get_joystick(rc.controller.Joystick.LEFT)[0]
-    
-    # TODO (warmup): Prevent the car from turning too abruptly
-    # Cap the angle based on the speed
-    angle_cap = 1 - 0.25 * abs(speed)
-    if angle > angle_cap:
-        angle = angle_cap
-    # Students may choose to adjust the angle, the speed, or both.
-    # The example provides an upper limit for the angle based on the speed,
-    # but you can also choose to scale the angle instead.
 
     # TODO (main challenge): Revisit the driving in shapes challenge.
     # Using your IMU data, create a more robust way to drive in shapes.
