@@ -3,7 +3,7 @@ Copyright Harvey Mudd College
 MIT License
 Fall 2019
 
-Lab 4 - IMU
+Lab 4 - IMU: Driving in shapes
 """
 
 ################################################################################
@@ -19,7 +19,6 @@ import racecar_utils as rc_utils
 import cv2 as cv
 import numpy as np
 import math
-# import math
 
 
 ################################################################################
@@ -65,7 +64,7 @@ def start():
     # Print start message
     # TODO (main challenge): add a line explaining what the Y button does
     print(
-        ">> Lab 4 - IMU \n"
+        ">> Lab 4 - IMU: Driving in Shapes \n"
         "\n"
         "Controlls:\n"
         "   Right trigger = accelerate forward\n"
