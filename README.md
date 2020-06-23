@@ -21,6 +21,8 @@ This repository contains the following materials:
 
 - **[Instructor](https://github.com/MITLLRacecar/Instructor)**: Materials for instructors and contributors to the RACECAR-MN course/platform.
 
+- **[Simulation](https://github.com/MITLLRacecar/Simulation)**: Source code for RacecarSim, a simulation for the RACECAR-MN built in Unity.
+
 - **[Image](https://github.com/MITLLRacecar/Image)**: Files which make up the RACECAR-MN image installed on the racecar's SD card.
 
 - **[Website](https://github.com/MITLLRacecar/Website)**: Materials on the RACECAR-MN website.
