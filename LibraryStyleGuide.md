@@ -51,7 +51,7 @@ If a `racecar_core` module has a function which must be called once per frame, n
 
 ## Type hints
 
-The parameters and return type of every public method must be annotated with type hints, as specified in [PEP 484](https://www.python.org/dev/peps/pep-0484/).  Use [nptyping](https://pypi.org/project/nptyping/) for Numpy types.
+The parameters and return type of every public method must be annotated with type hints, as specified in [PEP 484](https://www.python.org/dev/peps/pep-0484/).  Use [nptyping](https://pypi.org/project/nptyping/) for NumPy types.
 
 ### Reasoning
 
