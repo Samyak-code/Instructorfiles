@@ -9,11 +9,12 @@ In general, refer to [PEP 8](https://www.python.org/dev/peps/pep-0008/) for Pyth
 Before submitting a pull request, ask yourself:
 
 1. Have I run Black and manually enforced 88 characters per line in docstrings?
-2. Have I added sufficient comments such that students could understand my code (especially important in `racecar_utils`)?
-3. Do all of my public methods have docstrings following the requirements specified in this document?
-4. Have I verified that my documentation properly renders locally with Sphinx?
-5. Have I followed the naming conventions in this document, especially relating to private functions?
-6. Do all of my public methods verify that they have received valid arguments with relevant `assert`s?
+1. Have I added sufficient comments such that students could understand my code (especially important in `racecar_utils`)?
+1. Do all of my public methods have docstrings following the requirements specified in this document?
+1. Have I verified that my documentation properly renders locally with Sphinx?
+1. Have I followed the naming conventions in this document, especially relating to private functions?
+1. Do all of my public methods include type hints as specified in [PEP 484](https://www.python.org/dev/peps/pep-0484/)?
+1. Do all of my public methods verify that they receive valid arguments with `assert`s when necessary?
 
 ## Auto Formatting
 
@@ -50,7 +51,7 @@ If a `racecar_core` module has a function which must be called once per frame, n
 
 ## Type hints
 
-The parameters and return type of every public method must be annotated with type hints, as specified in [PEP 484](https://www.python.org/dev/peps/pep-0484/).  Use [nptyping](https://pypi.org/project/nptyping/) for Numpy types.
+The parameters and return type of every public method must be annotated with type hints, as specified in [PEP 484](https://www.python.org/dev/peps/pep-0484/).  Use [nptyping](https://pypi.org/project/nptyping/) for NumPy types.
 
 ### Reasoning
 
