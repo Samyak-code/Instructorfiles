@@ -87,7 +87,7 @@ def update():
 
     # If the triggers or joystick were pressed, clear the queue to cancel the current
     # shape and allow for manual driving
-    if right_trigger > 0 or right_trigger > 0 or angle > 0:
+    if right_trigger > 0 or left_trigger > 0 or angle > 0:
         queue.clear()
 
     # If the queue is not empty, follow the current drive instruction
