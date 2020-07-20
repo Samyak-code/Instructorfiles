@@ -29,9 +29,10 @@ MIN_STOP_DISTANCE = 20  # cm
 MAX_STOP_DISTANCE = 80  # cm
 ALPHA = 0.2  # Amount to use current_speed when updating cur_speed
 
-# Right and left points to sample in the depth image
-RIGHT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 5.0 / 8.0))
-LEFT_POINT = (rc.camera.get_height() // 2, int(rc.camera.get_width() * 3.0 / 8.0))
+# Boundaries of the crop window used to only consider objects in front of the car
+LEFT_COL = int(rc.camera.get_width() * 0.3)
+RIGHT_COL = int(rc.camera.get_width() * 0.6)
+BOTTOM_ROW = int(rc.camera.get_height() * 0.65)
 
 # Amount to increase stop distance (cm) per speed (cm/s) squared
 STOP_DISTANCE_SCALE = 40.0 / 10000
@@ -91,22 +92,14 @@ def update():
     lt = rc.controller.get_trigger(rc.controller.Trigger.LEFT)
     speed = rt - lt
 
-    # Calculate the distance of the object directly in front of the car, sampling
-    # multiple points and choosing the closest
+    # Calculate the distance of the object directly in front of the car by cropping
+    # out a window directly in front of the car and finding the closest point
     depth_image = rc.camera.get_depth_image()
-    center_distance = rc_utils.get_depth_image_center_distance(depth_image)
-    right_distance = rc_utils.get_pixel_average_distance(depth_image, RIGHT_POINT)
-    left_distance = rc_utils.get_pixel_average_distance(depth_image, LEFT_POINT)
-
-    # If any measurement in 0.0 (no data), make it the depth image max range
-    if center_distance == 0.0:
-        center_distance = rc.camera.get_max_range()
-    if right_distance == 0.0:
-        right_distance = rc.camera.get_max_range()
-    if left_distance == 0.0:
-        left_distance = rc.camera.get_max_range()
-
-    distance = min(center_distance, right_distance, left_distance)
+    depth_image_cropped = rc_utils.crop(
+        depth_image, (0, LEFT_COL), (BOTTOM_ROW, RIGHT_COL)
+    )
+    closest_point = rc_utils.get_closest_pixel(depth_image_cropped)
+    distance = rc_utils.get_pixel_average_distance(depth_image_cropped, closest_point)
 
     # Update forward speed estimate
     frame_speed = (prev_distance - distance) / rc.get_delta_time()
@@ -134,9 +127,7 @@ def update():
         # Safety stop if we are passed stop_distance by reversing at a speed
         # proportional to how far we are past stop_distance
         if 0 < distance < stop_distance:
-            speed = rc_utils.remap_range(
-                distance, 0, stop_distance, -4, -0.2, True
-            )
+            speed = rc_utils.remap_range(distance, 0, stop_distance, -4, -0.2, True)
             speed = rc_utils.clamp(speed, -1, -0.2)
             print("Safety stop: reversing at {}".format(speed))
 
@@ -149,9 +140,9 @@ def update():
     if rc.controller.is_down(rc.controller.Button.A):
         print("Speed:", speed, "Angle:", angle)
 
-    # Print the depth image center distance when the B button is held down
+    # Print the depth image closest distance when the B button is held down
     if rc.controller.is_down(rc.controller.Button.B):
-        print("Center distance:", center_distance)
+        print("Distance:", distance)
 
     # Print cur_speed estimate and stop distance when the X button is held down
     if rc.controller.is_down(rc.controller.Button.X):
@@ -162,7 +153,9 @@ def update():
         )
 
     # Display the current depth image
-    rc.display.show_depth_image(depth_image)
+    rc.display.show_depth_image(
+        depth_image, points=[(closest_point[0], closest_point[1] + LEFT_COL)]
+    )
 
     # TODO (stretch goal): Prevent forward movement if the car is about to drive off a
     # ledge.  ONLY TEST THIS IN THE SIMULATION, DO NOT TEST THIS WITH A REAL CAR.
