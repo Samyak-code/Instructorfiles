@@ -36,23 +36,23 @@ class Mode(enum.IntEnum):
 MIN_CONTOUR_AREA = 30
 
 # Area of the cone contour when we are the correct distance away (must be tuned)
-GOAL_AREA = 24000
+GOAL_AREA = 26000
 
 # Area of the cone contour when we should switch to reverse while aligning
-REVERSE_AREA = GOAL_AREA * 0.6
+REVERSE_AREA = GOAL_AREA * 0.4
 
 # Area of the cone contour when we should switch to forward while aligning
-FORWARD_AREA = GOAL_AREA * 0.4
+FORWARD_AREA = GOAL_AREA * 0.2
 
 # Speed to use in parking and aligning modes
-PARK_SPEED = 0.3
-ALIGN_SPEED = 0.7
+PARK_SPEED = 0.25
+ALIGN_SPEED = 0.75
 
 # The HSV range for the color orange, stored as (hsv_min, hsv_max)
 ORANGE = ((10, 50, 50), (20, 255, 255))
 
 # If desired speed/angle is under these thresholds, they are considered "close enough"
-SPEED_THRESHOLD = 0.05
+SPEED_THRESHOLD = 0.04
 ANGLE_THRESHOLD = 0.1
 
 # >> Variables
