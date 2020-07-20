@@ -5,7 +5,7 @@ def update():
     accel = rc.physics.get_linear_acceleration()
     ang_vel = rc.physics.get_angular_velocity()
 
-    if accel[3] > 0.10:
+    if accel[2] > 0.10:
         print("Kachow!")
 
     if ang_vel[0] > 0.25:
@@ -19,7 +19,7 @@ def update():
     global foo
 
     ang_vel = rc.physics.get_angular_velocity()
-    foo += ang_vel[1]
+    foo += ang_vel[1] * rc.get_delta_time()
 
     if foo < math.pi / 2:
         rc.drive.set_speed_angle(1, 1)
