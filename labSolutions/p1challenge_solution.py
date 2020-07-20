@@ -177,23 +177,30 @@ def update():
     angle: float
     speed: float
 
+    # Align ourselves to smoothly approach and pass the red cone while it is in view
     if cur_mode == Mode.red_align:
+        # Once the red cone is out of view, enter Mode.red_pass
         if (
             red_center is None
             or red_distance == 0
             or red_distance - prev_red_distance > CLOSE_DISTANCE
         ):
             if 0 < prev_red_distance < FAR_DISTANCE:
-                counter = max(1, counter)
+                counter = max(SHORT_PASS_TIME, counter)
                 cur_mode = Mode.red_pass
             else:
                 cur_mode = Mode.no_cones
+
+        # If it seems like we are not going to make the turn, enter Mode.red_reverse
         elif (
             red_distance < REVERSE_DISTANCE
             and red_center[1] > rc.camera.get_width() // 4
         ):
             counter = REVERSE_BRAKE_TIME
             cur_mode = Mode.red_reverse
+
+        # Align with the cone so that it gets closer to the left side of the screen
+        # as we get closer to it, and slow down as we approach
         else:
             goal_point = rc_utils.remap_range(
                 red_distance,
@@ -225,7 +232,7 @@ def update():
             or blue_distance - prev_blue_distance > CLOSE_DISTANCE
         ):
             if 0 < prev_blue_distance < FAR_DISTANCE:
-                counter = max(1, counter)
+                counter = max(SHORT_PASS_TIME, counter)
                 cur_mode = Mode.blue_pass
             else:
                 cur_mode = Mode.no_cones
@@ -259,11 +266,14 @@ def update():
                 True,
             )
 
+    # Curve around the cone at a fixed speed for a fixed time to pass it
     if cur_mode == Mode.red_pass:
         angle = rc_utils.remap_range(counter, 1, 0, 0, -0.5)
         speed = PASS_SPEED
-
         counter -= rc.get_delta_time()
+
+        # After the counter expires, enter Mode.blue_align if we see the blue cone,
+        # and Mode.blue_find if we do not
         if counter <= 0:
             cur_mode = Mode.blue_align if blue_distance > 0 else Mode.blue_find
 
@@ -275,6 +285,8 @@ def update():
         if counter <= 0:
             cur_mode = Mode.red_align if red_distance > 0 else Mode.red_find
 
+    # If we know we are supposed to be aligning with a red cone but do not see one,
+    # turn to the right until we find it
     elif cur_mode == Mode.red_find:
         angle = 1
         speed = FIND_SPEED
@@ -287,6 +299,7 @@ def update():
         if blue_distance > 0:
             cur_mode = Mode.blue_align
 
+    # If we are not going to make the turn, reverse while keeping the cone in view
     elif cur_mode == Mode.red_reverse:
         if counter >= 0:
             counter -= rc.get_delta_time()
@@ -317,6 +330,7 @@ def update():
                 counter = LONG_PASS_TIME
                 cur_mode = Mode.blue_align
 
+    # If no cones are seen, drive forward until we see either a red or blue cone
     elif cur_mode == Mode.no_cones:
         angle = 0
         speed = NO_CONES_SPEED
